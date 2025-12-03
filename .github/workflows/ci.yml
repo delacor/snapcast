@@ -344,8 +344,7 @@ jobs:
         run: env
       - name: dependencies
         run: |
-          brew update
-          brew upgrade
+          brew update-if-needed
           brew install libsoxr flac libvorbis opus catch2 boost
       - name: configure
         run: |
