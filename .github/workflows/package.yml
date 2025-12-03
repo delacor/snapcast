@@ -160,7 +160,7 @@ jobs:
       - name: Checkout Snapcast
         uses: actions/checkout@v6
         with:
-          repository: badaix/snapcast
+          repository: snapcast/snapcast
           path: src/snapcast
           ref: ${{ env.VERSION }}
       - name: Cache dependencies
@@ -214,7 +214,7 @@ jobs:
   #   - name: Checkout Snapcast
   #     uses: actions/checkout@v6
   #     with:
-  #       repository: badaix/snapcast
+  #       repository: snapcast/snapcast
   #       path: src/snapcast
   #       ref: ${{ env.VERSION }}
   #   - name: Setup environment
@@ -280,7 +280,7 @@ jobs:
   #   - name: Checkout Snapcast
   #     uses: actions/checkout@v6
   #     with:
-  #       repository: badaix/snapcast
+  #       repository: snapcast/snapcast
   #       path: src/snapcast
   #       ref: ${{ env.VERSION }}
   #   - name: Create rpm package

@@ -24,7 +24,7 @@ sudo pkg install git
 Clone Snapcast:
 
 ```sh
-git clone https://github.com/badaix/snapcast.git
+git clone https://github.com/snapcast/snapcast.git
 ```
 
 ## Install dependencies

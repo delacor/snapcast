@@ -764,9 +764,9 @@ _Johannes Pohl <snapcast@badaix.de>  Sat, 04 Mar 2017 00:13:37 +0200_
 
 ### Features
 
-- Added support [process](https://github.com/badaix/snapcast/blob/master/doc/player_setup.md#process) streams:  
+- Added support [process](https://github.com/snapcast/snapcast/blob/master/doc/player_setup.md#process) streams:  
   Snapserver starts a process and reads PCM data from stdout
-- Specialized versions for [Spotify](https://github.com/badaix/snapcast/blob/master/doc/player_setup.md#spotify) and [AirPlay](https://github.com/badaix/snapcast/blob/master/doc/player_setup.md#airplay)
+- Specialized versions for [Spotify](https://github.com/snapcast/snapcast/blob/master/doc/player_setup.md#spotify) and [AirPlay](https://github.com/snapcast/snapcast/blob/master/doc/player_setup.md#airplay)
 
 ### Bugfixes
 
