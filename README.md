@@ -168,17 +168,17 @@ Snapcast can be controlled using a [JSON-RPC API](doc/json_rpc_api/control.md) o
 
 ### WebApp
 
-The server is shipped with [Snapweb](https://github.com/badaix/snapweb), this WebApp can be reached under `http://<snapserver host>:1780` or `https://<snapserver host>:1788`, if SSL is enabled (see [HTTPS configuration](doc/configuration.md#https)).
+The server is shipped with [Snapweb](https://github.com/snapcast/snapweb), this WebApp can be reached under `http://<snapserver host>:1780` or `https://<snapserver host>:1788`, if SSL is enabled (see [HTTPS configuration](doc/configuration.md#https)).
 
 <picture>
- <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/badaix/snapweb/master/snapweb_dark.png">
- <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/badaix/snapweb/master/snapweb_light.png">
- <img alt="Snapweb" src="https://raw.githubusercontent.com/badaix/snapweb/master/snapweb_light.png">
+ <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/snapcast/snapweb/master/snapweb_dark.png">
+ <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/snapcast/snapweb/master/snapweb_light.png">
+ <img alt="Snapweb" src="https://raw.githubusercontent.com/snapcast/snapweb/master/snapweb_light.png">
 </picture>
 
 ### Android client
 
-There is an Android client [snapdroid](https://github.com/badaix/snapdroid) available in [Releases](https://github.com/badaix/snapdroid/releases/latest) and on [Google Play](https://play.google.com/store/apps/details?id=de.badaix.snapcast)
+There is an Android client [snapdroid](https://github.com/snapcast/snapdroid) available in [Releases](https://github.com/snapcast/snapdroid/releases/latest) and on [Google Play](https://play.google.com/store/apps/details?id=de.badaix.snapcast)
 
 ![Snapcast for Android](doc/snapcast_android_scaled.png)
 

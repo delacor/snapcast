@@ -637,7 +637,7 @@ _Johannes Pohl <snapcast@badaix.de>  Sat, 07 Jul 2018 00:13:37 +0200_
 - cmake: works on FreeBSD
 - Update external libs (JSON for modern C++, ASIO, AixLog)
 - Restructured source tree
-- Moved Android app into seperate project [snapdroid](https://github.com/badaix/snapdroid)
+- Moved Android app into seperate project [snapdroid](https://github.com/snapcast/snapdroid)
 
 _Johannes Pohl <snapcast@badaix.de>  Fri, 27 Apr 2018 00:13:37 +0200_
 
@@ -657,7 +657,7 @@ _Johannes Pohl <snapcast@badaix.de>  Fri, 27 Apr 2018 00:13:37 +0200_
 ### General
 
 - Drop dependency to external "jsonrpc++"
-- Move OpenWrt and Buildroot support into separate project "[SnapOS](https://github.com/badaix/snapos)"
+- Move OpenWrt and Buildroot support into separate project "[SnapOS](https://github.com/snapcast/snapos)"
 - Add CMake support (not fully replacing Make yet) (PR #212)
 - Remove MIPS support for Android (deprecated by Google)
 - Use MAC address as default client id (override with "--hostID")

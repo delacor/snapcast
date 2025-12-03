@@ -125,7 +125,7 @@ jobs:
           restore-keys: ${{ matrix.os }}-${{ matrix.debian }}-ccache-
       - name: Get Snapweb
         run: |
-          wget https://github.com/badaix/snapweb/releases/download/${SNAPWEB_VERSION}/snapweb.zip
+          wget https://github.com/snapcast/snapweb/releases/download/${SNAPWEB_VERSION}/snapweb.zip
           unzip snapweb.zip -d snapweb
       - name: Create deb package
         env:

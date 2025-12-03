@@ -38,7 +38,7 @@ You are welcome to contribute code in order to fix a bug or to implement a new f
 
 Only start working on the Pull Request after the team assigned the issue to you to avoid unnecessary efforts.
 
-Please note that Snapweb related contributions should be made in the [Snapweb project](https://github.com/badaix/snapweb).
+Please note that Snapweb related contributions should be made in the [Snapweb project](https://github.com/snapcast/snapweb).
 
 The following rule governs code contributions:
 
