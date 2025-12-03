@@ -4,13 +4,14 @@
 
 ### Features
 
-- Client: Add SDL2 player (PR #1460)
+- Client: Add SDL2 player for better portability (PR #1460)
 
 ### Bugfixes
 
 ### General
 
 - CI: remove gcc-9
+- Move project to https://github.com/snapcast/snapcast (Issue #1458)
 
 ### Contributors
 
