@@ -73,7 +73,7 @@ jobs:
     steps:
       - name: Get dependencies
         run: |
-          sed -i -e 's/MODULES=dep/MODULES=most/g' /etc/initramfs-tools/initramfs.conf && \
+          sed -i -e 's/MODULES=dep/MODULES=most/g' /etc/initramfs-tools/initramfs.conf || true
           apt-get update && \
           apt-get install -yq wget debhelper build-essential cmake git rename \
           libatomic1 libasound2-dev libsoxr-dev libvorbisidec-dev libvorbis-dev libflac-dev \
