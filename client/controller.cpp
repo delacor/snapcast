@@ -450,13 +450,15 @@ void Controller::start()
 
 void Controller::reconnect()
 {
-    LOG(INFO, LOG_TAG) << "Reconnecting\n";
+    LOG(INFO, LOG_TAG) << "Reconnecting in " << reconnect_delay_.count() << "s\n";
     timer_.cancel();
     clientConnection_->disconnect();
     player_.reset();
     stream_.reset();
     decoder_.reset();
-    timer_.expires_after(1s);
+    auto delay = reconnect_delay_;
+    reconnect_delay_ = std::min(reconnect_delay_ * 2, kMaxReconnectDelay_);
+    timer_.expires_after(delay);
     timer_.async_wait([this](const boost::system::error_code& ec)
     {
         if (!ec)
@@ -473,6 +475,7 @@ void Controller::worker()
         if (!ec)
         {
             // LOG(INFO, LOG_TAG) << "Connected!\n";
+            reconnect_delay_ = 1s;
             string macAddress = clientConnection_->getMacAddress();
             if (settings_.host_id.empty())
                 settings_.host_id = ::getHostId(macAddress);

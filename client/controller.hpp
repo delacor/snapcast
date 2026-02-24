@@ -68,6 +68,8 @@ private:
     boost::asio::ssl::context ssl_context_;
 #endif
     boost::asio::steady_timer timer_;
+    std::chrono::seconds reconnect_delay_{1s};
+    static constexpr std::chrono::seconds kMaxReconnectDelay_{60s};
     ClientSettings settings_;
     SampleFormat sampleFormat_;
     std::unique_ptr<ClientConnection> clientConnection_;
