@@ -25,7 +25,7 @@
 // standard headers
 #include <string>
 
-#ifndef WINDOWS
+#if !defined(WINDOWS) && !defined(__ANDROID__)
 #include <filesystem>
 #include <optional>
 #endif
@@ -36,7 +36,7 @@ namespace utils::file
 /// @return true if @p filename exists
 bool exists(const std::string& filename);
 
-#ifndef WINDOWS
+#if !defined(WINDOWS) && !defined(__ANDROID__)
 /// @return absolute version of @p filename, if @p filename is located in @p directory
 std::optional<std::filesystem::path> isInDirectory(std::filesystem::path filename, std::filesystem::path directory);
 

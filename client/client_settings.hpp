@@ -24,9 +24,15 @@
 #include "player/pcm_device.hpp"
 
 // standard headers
-#include <filesystem>
 #include <optional>
 #include <string>
+#ifdef __ANDROID__
+// <filesystem> is not available in NDK 16; use std::string as path type
+using FilePath = std::string;
+#else
+#include <filesystem>
+using FilePath = std::filesystem::path;
+#endif
 
 
 /// Snapclient settings
@@ -75,11 +81,11 @@ struct ClientSettings
         /// auth info
         std::optional<Auth> auth;
         /// server certificate
-        std::optional<std::filesystem::path> server_certificate;
+        std::optional<FilePath> server_certificate;
         /// Certificate file
-        std::filesystem::path certificate;
+        FilePath certificate;
         /// Private key file
-        std::filesystem::path certificate_key;
+        FilePath certificate_key;
         /// Password for encrypted key file
         std::string key_password;
         /// Is ssl in use?

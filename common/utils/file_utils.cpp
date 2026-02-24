@@ -38,7 +38,9 @@
 #include <stdexcept>
 #include <vector>
 #endif
+#if !defined(__ANDROID__)
 #include <filesystem>
+#endif
 
 
 namespace utils::file
@@ -49,11 +51,16 @@ static constexpr auto LOG_TAG = "FileUtils";
 
 bool exists(const std::string& filename)
 {
+#ifdef __ANDROID__
+    struct stat st;
+    return stat(filename.c_str(), &st) == 0;
+#else
     return std::filesystem::exists(filename);
+#endif
 }
 
 
-#ifndef WINDOWS
+#if !defined(WINDOWS) && !defined(__ANDROID__)
 std::optional<std::filesystem::path> isInDirectory(std::filesystem::path filename, std::filesystem::path directory)
 {
     auto addLeadingSlash = [](const std::filesystem::path& path) -> std::filesystem::path

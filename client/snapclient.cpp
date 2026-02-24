@@ -51,7 +51,9 @@
 
 // standard headers
 #include <algorithm>
+#ifndef __ANDROID__
 #include <filesystem>
+#endif
 #include <iostream>
 #include <vector>
 #ifndef WINDOWS
@@ -178,12 +180,12 @@ int main(int argc, char** argv)
         auto deprecated_port_opt = op.add<Value<size_t>>("p", "port", "(deprecated, use [url]) Server port", 1704);
         op.add<Value<size_t>>("i", "instance", "Instance id when running multiple instances on the same host", 1, &settings.instance);
         op.add<Value<string>>("", "hostID", "Unique host id, default is MAC address", "", &settings.host_id);
-        op.add<Value<std::filesystem::path>>("", "cert", "Client certificate file (PEM format)", settings.server.certificate, &settings.server.certificate);
-        op.add<Value<std::filesystem::path>>("", "cert-key", "Client private key file (PEM format)", settings.server.certificate_key,
-                                             &settings.server.certificate_key);
+        op.add<Value<FilePath>>("", "cert", "Client certificate file (PEM format)", settings.server.certificate, &settings.server.certificate);
+        op.add<Value<FilePath>>("", "cert-key", "Client private key file (PEM format)", settings.server.certificate_key,
+                                &settings.server.certificate_key);
         op.add<Value<string>>("", "key-password", "Key password (for encrypted private key)", settings.server.key_password, &settings.server.key_password);
         auto server_cert_opt =
-            op.add<Implicit<std::filesystem::path>>("", "server-cert", "Verify server with CA certificate (PEM format)", "default certificates");
+            op.add<Implicit<FilePath>>("", "server-cert", "Verify server with CA certificate (PEM format)", "default certificates");
 
 // PCM device specific
 #if defined(HAS_ALSA) || defined(HAS_PULSE) || defined(HAS_WASAPI) || defined(HAS_PIPEWIRE)
@@ -407,7 +409,11 @@ int main(int argc, char** argv)
             if (server_cert_opt->get_default() == server_cert_opt->value())
                 settings.server.server_certificate = "";
             else
+#ifdef __ANDROID__
+                settings.server.server_certificate = server_cert_opt->value();
+#else
                 settings.server.server_certificate = std::filesystem::weakly_canonical(server_cert_opt->value());
+#endif
             if (settings.server.server_certificate.value_or("").empty())
                 LOG(INFO, LOG_TAG) << "Server certificate: default certificates\n";
             else
@@ -416,13 +422,15 @@ int main(int argc, char** argv)
 
         if (!settings.server.certificate.empty() && !settings.server.certificate_key.empty())
         {
+#ifndef __ANDROID__
             namespace fs = std::filesystem;
             settings.server.certificate = fs::weakly_canonical(settings.server.certificate);
             if (!fs::exists(settings.server.certificate))
-                throw SnapException("Certificate file not found: " + settings.server.certificate.string());
+                throw SnapException("Certificate file not found: " + settings.server.certificate);
             settings.server.certificate_key = fs::weakly_canonical(settings.server.certificate_key);
             if (!fs::exists(settings.server.certificate_key))
-                throw SnapException("Certificate_key file not found: " + settings.server.certificate_key.string());
+                throw SnapException("Certificate_key file not found: " + settings.server.certificate_key);
+#endif
         }
         else if (settings.server.certificate.empty() != settings.server.certificate_key.empty())
         {
