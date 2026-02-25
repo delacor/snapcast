@@ -27,8 +27,17 @@
 #include <optional>
 #include <string>
 #ifdef __ANDROID__
-// <filesystem> is not available in NDK 16; use std::string as path type
-using FilePath = std::string;
+// <filesystem> is not available on very old NDKs (pre-r21 / armeabi).
+// Provide a std::string subclass that exposes .string() so code written for
+// std::filesystem::path compiles unchanged.
+struct FilePath : public std::string
+{
+    using std::string::string;
+    FilePath() = default;
+    FilePath(const std::string& s) : std::string(s) {}
+    FilePath(std::string&& s) : std::string(std::move(s)) {}
+    const std::string& string() const { return *this; }
+};
 #else
 #include <filesystem>
 using FilePath = std::filesystem::path;
