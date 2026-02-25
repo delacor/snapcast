@@ -1,0 +1,157 @@
+name: Android Dependencies
+
+# Builds an OpenSSL prefab AAR for Android and publishes it to GitHub Releases.
+# Snapdroid downloads this AAR the same way it downloads other snapcast-deps AARs.
+#
+# Weekly runs automatically pick up the latest stable OpenSSL release.
+# Manual runs accept an explicit version via workflow_dispatch.
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # Every Monday at 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      openssl_version:
+        description: 'OpenSSL version to build (e.g. 3.4.1) — leave empty for latest stable'
+        required: false
+        default: ''
+
+permissions:
+  contents: write   # needed to create/update releases
+
+env:
+  NDK_VERSION: 28.2.13676358
+  ANDROID_API: 21
+
+jobs:
+  build-openssl-aar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # ── resolve which OpenSSL version we are building ──────────────────────
+      - name: Resolve OpenSSL version
+        id: resolve
+        run: |
+          VERSION="${{ inputs.openssl_version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(curl -fsSL https://api.github.com/repos/openssl/openssl/releases/latest \
+              | jq -r '.tag_name' | sed 's/^openssl-//')
+            echo "No version specified – resolved latest stable: ${VERSION}"
+          fi
+          echo "openssl_version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      # ── Android toolchain setup ─────────────────────────────────────────────
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK ${{ env.NDK_VERSION }}
+        run: |
+          sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
+          echo "ANDROID_NDK_HOME=${ANDROID_SDK_ROOT}/ndk/${{ env.NDK_VERSION }}" >> "$GITHUB_ENV"
+
+      # ── build OpenSSL static libs for all ABIs ──────────────────────────────
+      - name: Build OpenSSL ${{ steps.resolve.outputs.openssl_version }}
+        run: |
+          OPENSSL_VERSION="${{ steps.resolve.outputs.openssl_version }}" \
+          OPENSSL_INSTALL_DIR="${{ github.workspace }}/openssl-install" \
+          ANDROID_NDK_HOME="${ANDROID_NDK_HOME}" \
+          ANDROID_API="${{ env.ANDROID_API }}" \
+          bash build_openssl_android.sh
+
+      # ── package as a prefab AAR ─────────────────────────────────────────────
+      # Produces the same prefab v2 structure as badaix/snapcast-deps AARs so
+      # Gradle + AGP can resolve find_package(openssl CONFIG) transparently.
+      - name: Package prefab AAR
+        env:
+          VERSION: ${{ steps.resolve.outputs.openssl_version }}
+        run: |
+          INSTALL_DIR="${{ github.workspace }}/openssl-install"
+          AAR_DIR="${{ github.workspace }}/aar-work"
+          NDK_MAJOR=$(echo "${{ env.NDK_VERSION }}" | cut -d. -f1)
+
+          mkdir -p "${AAR_DIR}"
+
+          # --- AndroidManifest.xml -------------------------------------------
+          cat > "${AAR_DIR}/AndroidManifest.xml" <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.github.delacor.openssl" />
+          XML
+
+          # --- prefab/prefab.json --------------------------------------------
+          mkdir -p "${AAR_DIR}/prefab"
+          printf '{"schema_version":2,"name":"openssl","version":"%s","dependencies":[]}\n' \
+            "${VERSION}" > "${AAR_DIR}/prefab/prefab.json"
+
+          # --- modules: crypto + ssl -----------------------------------------
+          for MODULE in crypto ssl; do
+            MOD_DIR="${AAR_DIR}/prefab/modules/${MODULE}"
+            mkdir -p "${MOD_DIR}"
+
+            if [ "${MODULE}" = "ssl" ]; then
+              # ssl depends on crypto; no separate headers needed
+              printf '{"export_libraries":[":crypto"],"android":{"export_libraries":[":crypto"]}}\n' \
+                > "${MOD_DIR}/module.json"
+            else
+              printf '{"export_libraries":[],"android":{"export_libraries":[]}}\n' \
+                > "${MOD_DIR}/module.json"
+              # All OpenSSL headers live under the crypto module's include/
+              mkdir -p "${MOD_DIR}/include"
+              cp -r "${INSTALL_DIR}/arm64-v8a/usr/local/include/openssl" \
+                    "${MOD_DIR}/include/openssl"
+            fi
+
+            # per-ABI libs + abi.json
+            for ABI in arm64-v8a armeabi-v7a x86 x86_64; do
+              ABI_DIR="${MOD_DIR}/libs/android.${ABI}"
+              mkdir -p "${ABI_DIR}"
+              printf '{"abi":"%s","api":%s,"ndk":%s,"stl":"none"}\n' \
+                "${ABI}" "${{ env.ANDROID_API }}" "${NDK_MAJOR}" \
+                > "${ABI_DIR}/abi.json"
+              cp "${INSTALL_DIR}/${ABI}/usr/local/lib/lib${MODULE}.a" "${ABI_DIR}/"
+            done
+          done
+
+          # --- zip into .aar -------------------------------------------------
+          AAR_FILE="${{ github.workspace }}/openssl-${VERSION}.aar"
+          (cd "${AAR_DIR}" && zip -r "${AAR_FILE}" .)
+          echo "AAR_FILE=${AAR_FILE}" >> "$GITHUB_ENV"
+
+      # ── publish to GitHub Releases ──────────────────────────────────────────
+      - name: Publish to GitHub Releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.resolve.outputs.openssl_version }}
+        run: |
+          TAG="openssl-v${VERSION}"
+          FILE="${{ env.AAR_FILE }}"
+          NOTES="OpenSSL ${VERSION} prefab AAR for Android.
+          ABIs: arm64-v8a, armeabi-v7a, x86, x86_64
+          NDK: ${{ env.NDK_VERSION }} | API: ${{ env.ANDROID_API }}
+          Built automatically by the Android Dependencies workflow."
+
+          if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
+            echo "Release ${TAG} exists – replacing asset..."
+            gh release upload "${TAG}" "${FILE}" \
+              --clobber --repo "${GITHUB_REPOSITORY}"
+          else
+            echo "Creating new release ${TAG} ..."
+            gh release create "${TAG}" "${FILE}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "OpenSSL ${VERSION} for Android" \
+              --notes "${NOTES}"
+          fi
+
+          echo ""
+          ASSET_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/openssl-${VERSION}.aar"
+          echo "Asset URL: ${ASSET_URL}"
+          echo "Snapdroid wget line:"
+          echo "  wget \"\${ASSET_URL}\" -P \"\${LIBS_DIR}\""
