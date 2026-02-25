@@ -331,7 +331,25 @@ endif()
 
 if(BUILD_WITH_SSL)
   if(ANDROID)
-    find_package(openssl REQUIRED CONFIG)
+    # OpenSSL built from official source (build_openssl_android.sh); OPENSSL_ROOT set from build.gradle
+    if(NOT OPENSSL_ROOT)
+      message(FATAL_ERROR "OPENSSL_ROOT is required for Android. Run build_openssl_android.sh first (or CI step).")
+    endif()
+    set(_openssl_abi_root "${OPENSSL_ROOT}/${ANDROID_ABI}/usr/local")
+    set(_openssl_include "${_openssl_abi_root}/include")
+    set(_openssl_lib "${_openssl_abi_root}/lib")
+    if(NOT EXISTS "${_openssl_include}/openssl/ssl.h")
+      message(FATAL_ERROR "OpenSSL not found at ${_openssl_abi_root}. Run build_openssl_android.sh first.")
+    endif()
+    add_library(openssl::crypto STATIC IMPORTED)
+    set_target_properties(openssl::crypto PROPERTIES
+      IMPORTED_LOCATION "${_openssl_lib}/libcrypto.a"
+      INTERFACE_INCLUDE_DIRECTORIES "${_openssl_include}")
+    add_library(openssl::ssl STATIC IMPORTED)
+    set_target_properties(openssl::ssl PROPERTIES
+      IMPORTED_LOCATION "${_openssl_lib}/libssl.a"
+      INTERFACE_INCLUDE_DIRECTORIES "${_openssl_include}"
+      INTERFACE_LINK_LIBRARIES openssl::crypto)
     add_compile_definitions(HAS_OPENSSL)
   else()
     find_package(OpenSSL REQUIRED)
