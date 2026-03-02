@@ -269,7 +269,7 @@ void PcmStream::start()
 
 void PcmStream::stop()
 {
-    LOG(INFO, LOG_TAG) << "Stop " << getName() << "\n";
+    LOG(INFO, LOG_TAG) << "Stop " << name_ << "\n";
     active_ = false;
     setState(ReaderState::kIdle);
 }
