@@ -5,20 +5,30 @@
 ### Features
 
 - Client: Add SDL2 player for better portability (PR #1460)
+- Server: Add option for a default source (PR #1494, Issue #1316)
 
 ### Bugfixes
+
+- Server: End control script when Stream.RemoveStream is called (Issue #1455)
 
 ### General
 
 - CI: remove gcc-9
 - Move project to https://github.com/snapcast/snapcast (Issue #1458)
+- Doc: Update README with Snapclient for ESP32 details (PR #1468)
+- Doc: Update README with snapmixer (CLI volume control) details (PR #1490)
+- Doc: Include correct samplerate in the go-librespot example (PR #1504)
 
 ### Contributors
 
 - @badaix
 - @malkstar
+- @CarlosDerSeher
+- @tremby
+- @genericuser256
+- @flocke
 
-_Johannes Pohl <snapcast@badaix.de>  Wed, 24 Dec 2025 00:13:37 +0200_
+_Johannes Pohl <snapcast@badaix.de>  Sat, 07 Mar 2026 00:13:37 +0200_
 
 # Snapcast changelog
 
