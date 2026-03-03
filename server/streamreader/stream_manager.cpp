@@ -1,6 +1,6 @@
 /***
     This file is part of snapcast
-    Copyright (C) 2014-2025  Johannes Pohl
+    Copyright (C) 2014-2026  Johannes Pohl
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 // local headers
 #include "airplay_stream.hpp"
+#include "common/aixlog.hpp"
 #ifdef HAS_ALSA
 #include "alsa_stream.hpp"
 #endif
@@ -42,6 +43,9 @@
 // 3rd party headers
 
 // standard headers
+
+
+static constexpr auto LOG_TAG = "StreamManager";
 
 
 using namespace std;
@@ -165,11 +169,13 @@ PcmStreamPtr StreamManager::addStream(StreamUri& streamUri, PcmStream::Source so
 
 void StreamManager::removeStream(const std::string& name)
 {
+    LOG(INFO, LOG_TAG) << "Removing stream '" << name << "'\n";
     auto iter = std::find_if(streams_.begin(), streams_.end(), [&name](const PcmStreamPtr& stream) { return stream->getName() == name; });
     if (iter != streams_.end())
     {
         (*iter)->stop();
         streams_.erase(iter);
+        LOG(DEBUG, LOG_TAG) << "Found and removed stream '" << (*iter)->getName() << "'\n";
     }
 }
 
@@ -185,12 +191,21 @@ const PcmStreamPtr StreamManager::getDefaultStream() const
     if (streams_.empty())
         return nullptr;
 
+    bool hasDefaultSource = !settings_.stream.defaultSource.empty();
+    PcmStreamPtr firstValidStream = nullptr;
+
     for (const auto& stream : streams_)
     {
         if (stream->getCodec() != "null")
-            return stream;
+        {
+            if (firstValidStream == nullptr)
+                firstValidStream = stream;
+
+            if (!hasDefaultSource || (hasDefaultSource && stream->getName() == settings_.stream.defaultSource))
+                return stream;
+        }
     }
-    return nullptr;
+    return firstValidStream;
 }
 
 
